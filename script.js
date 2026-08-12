@@ -1,159 +1,111 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Elementos do DOM
   const form = document.getElementById('actionForm');
   const input = document.getElementById('userInput');
-  const inputError = document.getElementById('inputError');
   const activityList = document.getElementById('activityList');
-  const clearAllBtn = document.getElementById('clearAllBtn');
+  const clearBtn = document.getElementById('clearBtn');
   const toast = document.getElementById('toast');
-
   let toastTimer = null;
 
-  // Carregar dados salvos ao iniciar
-  loadActivities();
+  // Carregar dados armazenados ao iniciar
+  loadFromStorage();
 
-  // Manipulador do envio do formulário
+  // 1. Processar envio do formulário
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    const value = input.value.trim();
 
-    const textValue = input.value.trim();
+    if (!value) return;
 
-    // Validação
-    if (!textValue) {
-      showError('Por favor, digite uma descrição para a tarefa.');
-      return;
-    }
+    const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const itemData = { id: Date.now(), text: value, time: time };
 
-    clearError();
-    addActivity(textValue);
-    
-    // Limpar input
+    renderItem(itemData);
+    saveToStorage(itemData);
+
     input.value = '';
-    input.focus();
-
-    // Feedback ao usuário
-    showToast('Task registrada com sucesso!');
+    showToast('Ação registrada com sucesso!');
   });
 
-  // Limpar erro ao digitar
-  input.addEventListener('input', () => {
-    if (input.value.trim()) {
-      clearError();
-    }
+  // 2. Limpar toda a lista
+  clearBtn.addEventListener('click', () => {
+    localStorage.removeItem('tasks_prototype');
+    renderEmptyState();
+    showToast('Histórico limpo!');
   });
 
-  // Botão Limpar Tudo
-  clearAllBtn.addEventListener('click', () => {
-    if (confirm('Tem certeza que deseja apagar todo o histórico?')) {
-      localStorage.removeItem('prototype_activities');
-      renderEmptyState();
-      showToast('Histórico limpo com sucesso.');
-    }
-  });
-
-  // Função para adicionar atividade na lista
-  function addActivity(text) {
+  // 3. Renderizar um item na tela
+  function renderItem(item) {
     const emptyState = activityList.querySelector('.empty-state');
     if (emptyState) {
       emptyState.remove();
     }
 
-    const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    
-    const itemData = { id: Date.now(), text, time };
-    
-    createItemElement(itemData);
-    saveActivityToStorage(itemData);
-  }
-
-  // Criar o elemento HTML da atividade
-  function createItemElement(item) {
     const li = document.createElement('li');
     li.className = 'activity-item';
     li.dataset.id = item.id;
-
     li.innerHTML = `
       <span>
         <strong>• ${escapeHTML(item.text)}</strong> 
         <span class="time">(${item.time})</span>
       </span>
-      <button class="delete-btn" aria-label="Excluir tarefa">&times;</button>
+      <button class="delete-btn" title="Remover item">&times;</button>
     `;
 
     // Evento de exclusão individual
     li.querySelector('.delete-btn').addEventListener('click', () => {
       li.remove();
-      removeActivityFromStorage(item.id);
-      
+      removeFromStorage(item.id);
       if (activityList.children.length === 0) {
         renderEmptyState();
       }
-      showToast('Tarefa removida.');
+      showToast('Item removido!');
     });
 
     activityList.prepend(li);
   }
 
-  // Renderizar o estado vazio
+  // 4. Renderizar estado vazio
   function renderEmptyState() {
     activityList.innerHTML = '<li class="empty-state">Nenhuma atividade registrada ainda.</li>';
   }
 
-  // Validação Visual
-  function showError(message) {
-    input.classList.add('invalid');
-    inputError.textContent = message;
-  }
-
-  function clearError() {
-    input.classList.remove('invalid');
-    inputError.textContent = '';
-  }
-
-  // Exibir Notificação (Toast)
-  function showToast(message) {
-    toast.textContent = message;
+  // 5. Exibir Toast
+  function showToast(msg) {
+    toast.textContent = msg;
     toast.classList.remove('hidden');
 
     if (toastTimer) clearTimeout(toastTimer);
 
     toastTimer = setTimeout(() => {
       toast.classList.add('hidden');
-    }, 3000);
+    }, 2500);
   }
 
-  // Métodos de Persistência (LocalStorage)
-  function saveActivityToStorage(item) {
-    const activities = JSON.parse(localStorage.getItem('prototype_activities') || '[]');
-    activities.push(item);
-    localStorage.setItem('prototype_activities', JSON.stringify(activities));
+  // 6. Funções de LocalStorage
+  function saveToStorage(item) {
+    const items = JSON.parse(localStorage.getItem('tasks_prototype') || '[]');
+    items.push(item);
+    localStorage.setItem('tasks_prototype', JSON.stringify(items));
   }
 
-  function loadActivities() {
-    const activities = JSON.parse(localStorage.getItem('prototype_activities') || '[]');
-    
-    if (activities.length > 0) {
+  function loadFromStorage() {
+    const items = JSON.parse(localStorage.getItem('tasks_prototype') || '[]');
+    if (items.length > 0) {
       activityList.innerHTML = '';
-      activities.forEach(item => createItemElement(item));
+      items.forEach(item => renderItem(item));
     }
   }
 
-  function removeActivityFromStorage(id) {
-    let activities = JSON.parse(localStorage.getItem('prototype_activities') || '[]');
-    activities = activities.filter(item => item.id !== id);
-    localStorage.setItem('prototype_activities', JSON.stringify(activities));
+  function removeFromStorage(id) {
+    let items = JSON.parse(localStorage.getItem('tasks_prototype') || '[]');
+    items = items.filter(item => item.id !== id);
+    localStorage.setItem('tasks_prototype', JSON.stringify(items));
   }
 
-  // Utilitário para evitar ataques XSS
+  // 7. Sanitização contra XSS
   function escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, 
-      tag => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        "'": '&#39;',
-        '"': '&quot;'
-      }[tag] || tag)
-    );
+    return str.replace(/[&<>'"]/g, tag => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
   }
 });
