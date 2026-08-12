@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel do Protótipo v2</title>
+  <meta name="description" content="Protótipo interativo desenvolvido com base em testes de usabilidade.">
+  <title>Central do Protótipo v2</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app-container">
     <header class="app-header">
       <h1>⚡ Central do Protótipo</h1>
-      <p>Gerencie ações e acompanhe feedbacks dos testes em tempo real</p>
+      <p>Gerencie ações e acompanhe o feedback em tempo real</p>
     </header>
 
     <main class="app-main">
-      <section class="card">
-        <h2>➕ Registrar Nova Tarefa</h2>
+      <section class="card" aria-labelledby="form-heading">
+        <h2 id="form-heading">➕ Registrar Nova Tarefa</h2>
         <p>Insira uma tarefa para testar o fluxo de envio e a resposta do sistema.</p>
         
-        <form id="actionForm">
+        <form id="actionForm" novalidate>
           <div class="form-group">
             <label for="userInput">Descrição da Tarefa</label>
             <input 
@@ -27,27 +28,31 @@
               placeholder="Ex: Validar fluxo da tela secundária" 
               required
               autocomplete="off"
+              maxlength="100"
             >
+            <span class="error-message" id="inputError" aria-live="polite"></span>
           </div>
+          
           <button type="submit" id="submitBtn">
-            <span>Confirmar e Salvar</span>
+            <span class="btn-text">Confirmar e Salvar</span>
           </button>
         </form>
       </section>
 
-      <section class="card">
-        <h2>📋 Histórico de Ações</h2>
-        <p>Abaixo estão as interações mais recentes gravadas durante o teste:</p>
+      <section class="card" aria-labelledby="list-heading">
+        <div class="card-header">
+          <h2 id="list-heading">📋 Histórico de Ações</h2>
+          <button id="clearAllBtn" class="btn-secondary" type="button" title="Limpar todas as tarefas">Limpar Tudo</button>
+        </div>
+        <p>Abaixo estão as interações registradas durante o teste:</p>
         
-        <ul id="activityList" class="activity-list">
+        <ul id="activityList" class="activity-list" aria-live="polite">
           <li class="empty-state">Nenhuma atividade registrada ainda.</li>
         </ul>
       </section>
     </main>
 
-    <div id="toast" class="toast hidden" role="alert" aria-live="polite">
-      Ação realizada com sucesso!
-    </div>
+    <div id="toast" class="toast hidden" role="alert" aria-live="assertive"></div>
   </div>
 
   <script src="script.js"></script>
