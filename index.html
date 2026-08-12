@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Protótipo v2</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>⚡ Central do Protótipo</h1>
+      <p>Gerencie ações e acompanhe feedbacks dos testes em tempo real</p>
+    </header>
+
+    <main class="app-main">
+      <section class="card">
+        <h2>➕ Registrar Nova Tarefa</h2>
+        <p>Insira uma tarefa para testar o fluxo de envio e a resposta do sistema.</p>
+        
+        <form id="actionForm">
+          <div class="form-group">
+            <label for="userInput">Descrição da Tarefa</label>
+            <input 
+              type="text" 
+              id="userInput" 
+              placeholder="Ex: Validar fluxo da tela secundária" 
+              required
+              autocomplete="off"
+            >
+          </div>
+          <button type="submit" id="submitBtn">
+            <span>Confirmar e Salvar</span>
+          </button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>📋 Histórico de Ações</h2>
+        <p>Abaixo estão as interações mais recentes gravadas durante o teste:</p>
+        
+        <ul id="activityList" class="activity-list">
+          <li class="empty-state">Nenhuma atividade registrada ainda.</li>
+        </ul>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden" role="alert" aria-live="polite">
+      Ação realizada com sucesso!
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
